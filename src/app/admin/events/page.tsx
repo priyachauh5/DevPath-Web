@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { db } from '@/lib/firebase';
 import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc, query, orderBy } from 'firebase/firestore';
 import { Plus, Trash2, Edit2, Calendar, Link as LinkIcon, Image as ImageIcon, Save, X } from 'lucide-react';
@@ -106,7 +107,7 @@ export default function AdminEventsPage() {
                         <div key={event.id} className="bg-card border border-border rounded-xl overflow-hidden flex flex-col">
                             <div className="h-48 bg-muted relative">
                                 {event.image ? (
-                                    <img src={event.image} alt={event.title} className="w-full h-full object-cover" />
+                                    <Image src={event.image} alt={event.title} fill className="object-cover" />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                                         <ImageIcon size={48} />

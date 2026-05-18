@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { Github, Code, FileText, MessageSquare, ExternalLink, Loader2 } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import styles from './Contributors.module.css';
@@ -161,12 +162,13 @@ export default function ContributorsPage() {
                                 {contributor.rank === 1 && <div className={styles.crown}>👑</div>}
                                 {contributor.rank === 2 && <div className={styles.crown} style={{ fontSize: '24px', filter: 'grayscale(1)' }}>🥈</div>}
                                 {contributor.rank === 3 && <div className={styles.crown} style={{ fontSize: '24px', filter: 'sepia(1)' }}>🥉</div>}
-                                <div className={styles.avatar} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                                <div className={styles.avatar} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', position: 'relative' }}>
                                     {contributor.avatar ? (
-                                        <img 
-                                            src={contributor.avatar} 
+                                        <Image
+                                            src={contributor.avatar}
                                             alt={contributor.name}
-                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                            fill
+                                            className="object-cover"
                                         />
                                     ) : (
                                         <div style={{ fontSize: '32px', fontWeight: 'bold', color: 'white' }}>

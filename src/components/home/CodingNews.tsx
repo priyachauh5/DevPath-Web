@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { ExternalLink, Newspaper, RefreshCw, AlertCircle } from 'lucide-react';
 import styles from './CodingNews.module.css';
@@ -10,6 +11,27 @@ interface NewsItem {
     title: string;
     url: string;
     image: string | null;
+}
+
+const FALLBACK_NEWS_IMAGE =
+    'https://images.unsplash.com/photo-1504639725590-34d0984388bd?q=80&w=1000&auto=format&fit=crop';
+
+function NewsCardImage({ src, alt }: { src: string; alt: string }) {
+    const [imgSrc, setImgSrc] = useState(src);
+
+    useEffect(() => {
+        setImgSrc(src);
+    }, [src]);
+
+    return (
+        <Image
+            src={imgSrc}
+            alt={alt}
+            fill
+            className={styles.image}
+            onError={() => setImgSrc(FALLBACK_NEWS_IMAGE)}
+        />
+    );
 }
 
 export default function CodingNews() {
@@ -160,9 +182,7 @@ export default function CodingNews() {
                                 >
                                     <div className={styles.imageWrapper}>
                                         {item.image ? (
-                                            <img src={item.image} alt={item.title} className={styles.image} onError={(e) => {
-                                                (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1504639725590-34d0984388bd?q=80&w=1000&auto=format&fit=crop';
-                                            }} />
+                                            <NewsCardImage src={item.image} alt={item.title} />
                                         ) : (
                                             <div className={styles.placeholderImage}>
                                                 <Newspaper size={32} opacity={0.5} />

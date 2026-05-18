@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, Suspense } from 'react';
+import Image from 'next/image';
 import { doc, getDoc, collection, query, where, getDocs, orderBy, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { getEmbedUrl } from '@/lib/utils';
@@ -370,9 +371,9 @@ function ProfileContent() {
                 <div className={styles.header}>
                     <div className={styles.cover} />
                     <div className={styles.userInfo}>
-                        <div className={styles.avatar}>
+                        <div className={`${styles.avatar} relative overflow-hidden`}>
                             {user.photoURL ? (
-                                <img src={user.photoURL} alt={user.name || 'User'} className="w-full h-full object-cover rounded-full" />
+                                <Image src={user.photoURL} alt={user.name || 'User'} fill className="object-cover rounded-full" />
                             ) : (
                                 <div className="w-full h-full bg-primary/10 flex items-center justify-center text-primary text-4xl font-bold">
                                     {user.name?.charAt(0) || 'U'}
@@ -523,18 +524,36 @@ function ProfileContent() {
                             {user.githubStats.username && (
                                 <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="w-full">
-                                        <picture>
-                                            <source media="(prefers-color-scheme: dark)" srcSet={`https://github-readme-stats-salesp07.vercel.app/api?username=${user.githubStats.username}&count_private=true&show_icons=true&title_color=00bfbf&icon_color=00bfbf&text_color=c9d1d9&bg_color=0d1117&rank_icon=github&border_radius=20&hide_border=true`} />
-                                            <source media="(prefers-color-scheme: light)" srcSet={`https://github-readme-stats-salesp07.vercel.app/api?username=${user.githubStats.username}&count_private=true&show_icons=true&title_color=000000&icon_color=000000&text_color=000000&bg_color=ffffff&rank_icon=github&border_radius=20&hide_border=true`} />
-                                            <img alt="GitHub Stats" src={`https://github-readme-stats-salesp07.vercel.app/api?username=${user.githubStats.username}&count_private=true&show_icons=true&title_color=00bfbf&icon_color=00bfbf&text_color=c9d1d9&bg_color=0d1117&rank_icon=github&border_radius=20&hide_border=true`} className="w-full h-auto" />
-                                        </picture>
+                                        <Image
+                                            alt="GitHub Stats"
+                                            src={`https://github-readme-stats-salesp07.vercel.app/api?username=${user.githubStats.username}&count_private=true&show_icons=true&title_color=00bfbf&icon_color=00bfbf&text_color=c9d1d9&bg_color=0d1117&rank_icon=github&border_radius=20&hide_border=true`}
+                                            width={467}
+                                            height={195}
+                                            className="w-full h-auto hidden dark:block"
+                                        />
+                                        <Image
+                                            alt="GitHub Stats"
+                                            src={`https://github-readme-stats-salesp07.vercel.app/api?username=${user.githubStats.username}&count_private=true&show_icons=true&title_color=000000&icon_color=000000&text_color=000000&bg_color=ffffff&rank_icon=github&border_radius=20&hide_border=true`}
+                                            width={467}
+                                            height={195}
+                                            className="w-full h-auto dark:hidden"
+                                        />
                                     </div>
                                     <div className="w-full">
-                                        <picture>
-                                            <source media="(prefers-color-scheme: dark)" srcSet={`https://github-readme-streak-stats-salesp07.vercel.app/?user=${user.githubStats.username}&count_private=true&border_radius=20&ring=00bfbf&stroke=c9d1d9&background=0d1117&fire=00bfbf&currStreakNum=00bfbf&sideNums=00bfbf&datesside=00bfbf&Labelscurr=00bfbf&currStreakLabel=00bfbf&sideLabels=00bfbf&dates=c9d1d9&border=c9d1d9&hide_border=true`} />
-                                            <source media="(prefers-color-scheme: light)" srcSet={`https://github-readme-streak-stats-salesp07.vercel.app/?user=${user.githubStats.username}&count_private=true&border_radius=20&ring=000000&stroke=000000&background=ffffff&fire=ff0000&currStreakNum=000000&sideNums=000000&datesside=000000&Labelscurr=000000&currStreakLabel=000000&sideLabels=000000&dates=000000&border=000000&hide_border=true`} />
-                                            <img alt="GitHub Streak Stats" src={`https://github-readme-streak-stats-salesp07.vercel.app/?user=${user.githubStats.username}&count_private=true&border_radius=20&ring=00bfbf&stroke=c9d1d9&background=0d1117&fire=00bfbf&currStreakNum=00bfbf&sideNums=00bfbf&sideNums=00bfbf&datesside=00bfbf&Labelscurr=00bfbf&currStreakLabel=00bfbf&sideLabels=00bfbf&dates=c9d1d9&border=c9d1d9&hide_border=true`} className="w-full h-auto" />
-                                        </picture>
+                                        <Image
+                                            alt="GitHub Streak Stats"
+                                            src={`https://github-readme-streak-stats-salesp07.vercel.app/?user=${user.githubStats.username}&count_private=true&border_radius=20&ring=00bfbf&stroke=c9d1d9&background=0d1117&fire=00bfbf&currStreakNum=00bfbf&sideNums=00bfbf&datesside=00bfbf&Labelscurr=00bfbf&currStreakLabel=00bfbf&sideLabels=00bfbf&dates=c9d1d9&border=c9d1d9&hide_border=true`}
+                                            width={467}
+                                            height={195}
+                                            className="w-full h-auto hidden dark:block"
+                                        />
+                                        <Image
+                                            alt="GitHub Streak Stats"
+                                            src={`https://github-readme-streak-stats-salesp07.vercel.app/?user=${user.githubStats.username}&count_private=true&border_radius=20&ring=000000&stroke=000000&background=ffffff&fire=ff0000&currStreakNum=000000&sideNums=000000&datesside=000000&Labelscurr=000000&currStreakLabel=000000&sideLabels=000000&dates=000000&border=000000&hide_border=true`}
+                                            width={467}
+                                            height={195}
+                                            className="w-full h-auto dark:hidden"
+                                        />
                                     </div>
                                 </div>
                             )}
@@ -669,10 +688,11 @@ function ProfileContent() {
                                         ) : (
                                             <>
                                                 {project.screenshots.length > 0 ? (
-                                                    <img
+                                                    <Image
                                                         src={project.screenshots[0]}
                                                         alt={project.title}
-                                                        className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                                                        fill
+                                                        className="object-cover transition-transform group-hover:scale-105"
                                                     />
                                                 ) : (
                                                     <div className="w-full h-full flex items-center justify-center text-muted-foreground">
@@ -822,11 +842,12 @@ function ProfileContent() {
                                         />
                                     </div>
                                 ) : selectedProject.screenshots.length > 0 && (
-                                    <div className="aspect-video rounded-xl overflow-hidden bg-muted">
-                                        <img
+                                    <div className="aspect-video rounded-xl overflow-hidden bg-muted relative">
+                                        <Image
                                             src={selectedProject.screenshots[0]}
                                             alt={selectedProject.title}
-                                            className="w-full h-full object-contain"
+                                            fill
+                                            className="object-contain"
                                         />
                                     </div>
                                 )}

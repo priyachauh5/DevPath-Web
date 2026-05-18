@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { X, Upload, Plus, Trash2, Link as LinkIcon, Video, Image as ImageIcon, Globe, Save } from 'lucide-react';
 import { collection, addDoc, updateDoc, doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -343,7 +344,7 @@ export default function ProjectUploadModal({ isOpen, onClose, userId, userEmail,
                                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                                             {screenshots.map((url, index) => (
                                                 <div key={index} className="relative group aspect-video bg-muted rounded-lg overflow-hidden border border-border">
-                                                    <img src={url} alt={`Screenshot ${index + 1}`} className="w-full h-full object-cover" />
+                                                    <Image src={url} alt={`Screenshot ${index + 1}`} fill className="object-cover" />
                                                     <button
                                                         type="button"
                                                         onClick={() => handleRemoveScreenshot(index)}

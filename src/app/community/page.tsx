@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { useAuth } from '@/context/AuthContext';
 import { collection, query, orderBy, getDocs, limit, collectionGroup } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -245,11 +246,12 @@ export default function CommunityPage() {
                                     />
                                 </div>
                             ) : selectedProject.screenshots && selectedProject.screenshots.length > 0 && (
-                                <div className="aspect-video rounded-xl overflow-hidden bg-muted">
-                                    <img
+                                <div className="aspect-video rounded-xl overflow-hidden bg-muted relative">
+                                    <Image
                                         src={selectedProject.screenshots[0]}
                                         alt={selectedProject.title}
-                                        className="w-full h-full object-contain"
+                                        fill
+                                        className="object-contain"
                                     />
                                 </div>
                             )}

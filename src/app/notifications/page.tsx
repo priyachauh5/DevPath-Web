@@ -1,5 +1,6 @@
 "use client"
 import { useState, useEffect } from "react"
+import Image from "next/image"
 import { useAuth } from "@/context/AuthContext"
 import { db } from "@/lib/firebase"
 import { collection, query, orderBy, onSnapshot, doc, updateDoc, writeBatch, deleteDoc } from "firebase/firestore"
@@ -206,8 +207,8 @@ export default function NotificationsPage() {
                                             </p>
 
                                             {notif.image && (
-                                                <div className="mt-4 rounded-lg overflow-hidden border border-border max-w-md">
-                                                    <img src={notif.image} alt="Attachment" className="w-full h-auto" />
+                                                <div className="mt-4 rounded-lg overflow-hidden border border-border max-w-md relative aspect-video">
+                                                    <Image src={notif.image} alt="Attachment" fill className="object-contain" />
                                                 </div>
                                             )}
                                         </div>
