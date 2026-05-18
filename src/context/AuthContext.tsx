@@ -58,6 +58,9 @@ interface User {
         company?: string;
         location?: string;
         createdAt?: string;
+        linesAdded?: number;
+        linesRemoved?: number;
+        linesContributed?: number;
     };
     followers?: string[]; // Array of user UIDs
     following?: string[]; // Array of user UIDs

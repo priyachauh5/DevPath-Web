@@ -5,13 +5,14 @@ import { doc, getDoc, collection, query, where, getDocs, orderBy, updateDoc, arr
 import { db } from '@/lib/firebase';
 import { getEmbedUrl } from '@/lib/utils';
 import { teamMembers } from '@/data/team';
-import { Trophy, Flame, Star, Target, MapPin, Link as LinkIcon, Calendar, Phone, Github, Instagram, Linkedin, CheckCircle, User as UserIcon, Heart, Share2, Video, Image as ImageIcon, Globe, Check, Users, Shield, X, GitMerge, BookOpen, Plus } from 'lucide-react';
+import { Trophy, Flame, Star, Target, MapPin, Link as LinkIcon, Calendar, Phone, Github, Instagram, Linkedin, CheckCircle, User as UserIcon, Heart, Share2, Video, Image as ImageIcon, Globe, Check, Users, Shield, X, GitMerge, BookOpen, Plus, Code2 } from 'lucide-react';
 import styles from '@/components/profile/Profile.module.css';
 import Rewards from '@/components/profile/Rewards';
 import FollowButton from '@/components/profile/FollowButton';
 import LoginHeatmap from '@/components/profile/LoginHeatmap';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { GIT_FALLBACK_STATS } from '@/lib/github';
 
 interface PublicUser {
     id?: string;
@@ -58,6 +59,10 @@ interface PublicUser {
         location?: string;
         createdAt?: string;
         recentActivity?: any[];
+        linesAdded?: number;
+        linesRemoved?: number;
+        linesContributed?: number;
+        contributions?: number;
     };
 }
 
@@ -481,26 +486,36 @@ function ProfileContent() {
                             <h3 className="text-xl font-bold flex items-center gap-2 mb-4">
                                 <Github className="text-primary" size={20} /> GitHub Activity
                             </h3>
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
                                 <div className="flex flex-col items-center p-4 bg-muted/30 rounded-xl border border-border/50 hover:border-primary/50 transition-colors">
                                     <Globe className="mb-2 text-primary h-6 w-6" />
                                     <span className="text-2xl font-bold">{user.githubStats.repos || 0}</span>
-                                    <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Repositories</span>
+                                    <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider text-center">Repositories</span>
                                 </div>
                                 <div className="flex flex-col items-center p-4 bg-muted/30 rounded-xl border border-border/50 hover:border-primary/50 transition-colors">
                                     <Star className="mb-2 text-yellow-500 h-6 w-6" />
                                     <span className="text-2xl font-bold">{user.githubStats.totalStars || 0}</span>
-                                    <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Total Stars</span>
+                                    <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider text-center">Total Stars</span>
                                 </div>
                                 <div className="flex flex-col items-center p-4 bg-muted/30 rounded-xl border border-border/50 hover:border-primary/50 transition-colors">
                                     <Users className="mb-2 text-blue-500 h-6 w-6" />
                                     <span className="text-2xl font-bold">{user.githubStats.followers || 0}</span>
-                                    <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Followers</span>
+                                    <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider text-center">Followers</span>
                                 </div>
                                 <div className="flex flex-col items-center p-4 bg-muted/30 rounded-xl border border-border/50 hover:border-primary/50 transition-colors">
                                     <UserIcon className="mb-2 text-purple-500 h-6 w-6" />
                                     <span className="text-2xl font-bold">{user.githubStats.following || 0}</span>
-                                    <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Following</span>
+                                    <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider text-center">Following</span>
+                                </div>
+                                <div className="flex flex-col items-center p-4 bg-muted/30 rounded-xl border border-border/50 hover:border-primary/50 transition-colors">
+                                    <Code2 className="mb-2 text-emerald-500 h-6 w-6" />
+                                    <span className="text-2xl font-bold">{(user.githubStats.linesContributed ?? GIT_FALLBACK_STATS[(user.githubStats.username || '').toLowerCase()]?.additions ?? 0).toLocaleString()}</span>
+                                    <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider text-center">Lines Contributed</span>
+                                </div>
+                                <div className="flex flex-col items-center p-4 bg-muted/30 rounded-xl border border-border/50 hover:border-primary/50 transition-colors">
+                                    <GitMerge className="mb-2 text-orange-500 h-6 w-6" />
+                                    <span className="text-2xl font-bold">{user.githubStats.contributions ?? GIT_FALLBACK_STATS[(user.githubStats.username || '').toLowerCase()]?.commits ?? 0}</span>
+                                    <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider text-center">Commits Contributed</span>
                                 </div>
                             </div>
 

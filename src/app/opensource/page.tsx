@@ -66,10 +66,14 @@ export default function OpenSourcePage() {
                 localStorage.setItem('github_access_token', token); // Persist token
 
                 // Fetch Extended Data
-                const { fetchUserProfile, fetchUserRepos, fetchUserActivity } = await import('@/lib/github');
+                const { fetchUserProfile, fetchUserRepos, fetchUserActivity, fetchRepoContributorStats, calculateUserLinesContributed } = await import('@/lib/github');
                 const profile = await fetchUserProfile(token);
                 const repos = await fetchUserRepos(token);
                 const activity = await fetchUserActivity(profile.login, token);
+
+                // Fetch contributor stats (lines and commits)
+                const repoStats = await fetchRepoContributorStats(token);
+                const userLineStats = calculateUserLinesContributed(repoStats, profile.login);
 
                 // Calculate Total Stars
                 const totalStars = repos.reduce((acc: number, repo: any) => acc + (repo.stargazers_count || 0), 0);
@@ -106,7 +110,11 @@ export default function OpenSourcePage() {
                         bio: profile.bio,
                         company: profile.company,
                         location: profile.location,
-                        createdAt: profile.created_at
+                        createdAt: profile.created_at,
+                        linesAdded: userLineStats.additions,
+                        linesRemoved: userLineStats.deletions,
+                        linesContributed: userLineStats.additions,
+                        contributions: userLineStats.commits
                     },
                     github: profile.login, // Store username
                     // Store detailed data in subcollection or just basic stats here? 
