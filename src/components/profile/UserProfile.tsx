@@ -12,6 +12,7 @@ import ProjectUploadModal from '@/components/projects/ProjectUploadModal';
 import ProjectCard from '@/components/projects/ProjectCard';
 import Achievements from '@/components/profile/Achievements';
 import Rewards from '@/components/profile/Rewards';
+import DevCard from '@/components/profile/DevCard';
 import FollowButton from '@/components/profile/FollowButton';
 import LoginHeatmap from '@/components/profile/LoginHeatmap';
 import ReactMarkdown from 'react-markdown';
@@ -805,6 +806,16 @@ useEffect(() => {
 
                     {/* GitHub Stats & Achievements Component */}
                     <Achievements />
+
+                    {/* Dev Profile Share Card */}
+                    <div>
+                        <div className="flex items-center gap-2 mb-5">
+                            <Share2 size={18} className="text-primary" />
+                            <h3 className="text-xl font-bold">Your Dev Card</h3>
+                            <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-semibold ml-1">New</span>
+                        </div>
+                        <DevCard user={user} />
+                    </div>
 
 
 
