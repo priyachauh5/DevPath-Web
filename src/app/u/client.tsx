@@ -98,7 +98,16 @@ function ProfileContent({ uid }: { uid: string }) {
 
     useEffect(() => {
         const fetchUserAndProjects = async () => {
-            if (!uid) return;
+            if (!uid) {
+                setError('No user specified.');
+                setLoading(false);
+                return;
+            }
+            if (uid.length < 3 || uid.length > 128 || /[<>"']/.test(uid)) {
+                setError('Invalid user identifier.');
+                setLoading(false);
+                return;
+            }
             setLoading(true);
             setError('');
 
@@ -278,6 +287,15 @@ function ProfileContent({ uid }: { uid: string }) {
         };
 
         fetchUserAndProjects();
+    }, [uid]);
+
+    useEffect(() => {
+        if (!uid) return;
+        const link = document.createElement('link');
+        link.rel = 'canonical';
+        link.href = `${window.location.origin}/u/${uid}`;
+        document.head.appendChild(link);
+        return () => { link.remove(); };
     }, [uid]);
 
     const handleShareProfile = async () => {
@@ -878,10 +896,19 @@ function ProfileContent({ uid }: { uid: string }) {
     );
 }
 
+function isValidUid(value: string): boolean {
+    const trimmed = value.trim();
+    if (!trimmed || trimmed.length < 3 || trimmed.length > 128) return false;
+    if (/[<>"']/.test(trimmed)) return false;
+    return true;
+}
+
 function SearchParamsFallback() {
     const searchParams = useSearchParams();
     const pathname = usePathname();
-    const uid = searchParams.get('uid') || (pathname.startsWith('/u/') ? pathname.slice(3).split('/')[0].split('?')[0] : null);
+    const rawUid = searchParams.get('uid') || (pathname.startsWith('/u/') ? pathname.slice(3).split('/')[0].split('?')[0] : null);
+    const uid = rawUid?.trim() || null;
+
     if (!uid) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4 text-center">
@@ -891,6 +918,17 @@ function SearchParamsFallback() {
             </div>
         );
     }
+
+    if (!isValidUid(uid)) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4 text-center">
+                <UserIcon size={64} className="text-muted-foreground mb-4" />
+                <h1 className="text-2xl font-bold mb-2">Invalid Profile</h1>
+                <p className="text-muted-foreground">The requested profile identifier is invalid.</p>
+            </div>
+        );
+    }
+
     return <ProfileContent uid={uid} />;
 }
 

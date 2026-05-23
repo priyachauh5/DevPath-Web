@@ -10,6 +10,9 @@ export async function generateMetadata({ params }: { params: Promise<{ uid: stri
     return {
         title: `User Profile`,
         description: `View developer profile`,
+        alternates: {
+            canonical: `/u/${uid}`,
+        },
         openGraph: {
             title: `DevPath User Profile`,
             description: `Check out this developer profile on DevPath`,
@@ -20,5 +23,8 @@ export async function generateMetadata({ params }: { params: Promise<{ uid: stri
 
 export default async function UserProfilePage({ params }: { params: Promise<{ uid: string }> }) {
     const { uid } = await params;
+    if (!uid || uid.length < 3 || uid.length > 128 || /[<>"']/.test(uid)) {
+        return <ProfileClient />;
+    }
     return <ProfileClient uid={uid} />;
 }
