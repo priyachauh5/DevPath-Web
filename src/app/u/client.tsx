@@ -15,6 +15,7 @@ import DOMPurify from 'dompurify';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { GIT_FALLBACK_STATS } from '@/lib/github';
+import { getSafeSocialUrl } from '@/lib/safe-social-url';
 
 interface PublicUser {
     id?: string;
@@ -365,6 +366,11 @@ function ProfileContent() {
 
     const showMobile = user.privacySettings?.showMobile;
     const showLocation = user.privacySettings?.showLocation ?? true;
+    const safeSocialLinks = {
+        github: getSafeSocialUrl(user.github, 'github'),
+        linkedin: getSafeSocialUrl(user.linkedin, 'linkedin'),
+        instagram: getSafeSocialUrl(user.instagram, 'instagram')
+    };
 
     return (
         <section className={styles.profile}>
@@ -421,18 +427,18 @@ function ProfileContent() {
                             </div>
 
                             <div className="flex flex-wrap gap-3 mt-3">
-                                {user.github && (
-                                    <a href={user.github} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-sm hover:text-primary transition-colors">
+                                {safeSocialLinks.github && (
+                                    <a href={safeSocialLinks.github} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-sm hover:text-primary transition-colors">
                                         <Github size={14} /> GitHub
                                     </a>
                                 )}
-                                {user.linkedin && (
-                                    <a href={user.linkedin} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-sm hover:text-primary transition-colors">
+                                {safeSocialLinks.linkedin && (
+                                    <a href={safeSocialLinks.linkedin} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-sm hover:text-primary transition-colors">
                                         <Linkedin size={14} /> LinkedIn
                                     </a>
                                 )}
-                                {user.instagram && (
-                                    <a href={user.instagram} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-sm hover:text-primary transition-colors">
+                                {safeSocialLinks.instagram && (
+                                    <a href={safeSocialLinks.instagram} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-sm hover:text-primary transition-colors">
                                         <Instagram size={14} /> Instagram
                                     </a>
                                 )}
@@ -526,14 +532,14 @@ function ProfileContent() {
                                 <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="w-full">
                                         <Image
-                                            alt="GitHub Stats"
+                                            alt={`${user.githubStats.username} GitHub profile stats in dark theme`}
                                             src={`https://github-readme-stats-salesp07.vercel.app/api?username=${user.githubStats.username}&count_private=true&show_icons=true&title_color=00bfbf&icon_color=00bfbf&text_color=c9d1d9&bg_color=0d1117&rank_icon=github&border_radius=20&hide_border=true`}
                                             width={467}
                                             height={195}
                                             className="w-full h-auto hidden dark:block"
                                         />
                                         <Image
-                                            alt="GitHub Stats"
+                                            alt={`${user.githubStats.username} GitHub profile stats in light theme`}
                                             src={`https://github-readme-stats-salesp07.vercel.app/api?username=${user.githubStats.username}&count_private=true&show_icons=true&title_color=000000&icon_color=000000&text_color=000000&bg_color=ffffff&rank_icon=github&border_radius=20&hide_border=true`}
                                             width={467}
                                             height={195}
@@ -542,14 +548,14 @@ function ProfileContent() {
                                     </div>
                                     <div className="w-full">
                                         <Image
-                                            alt="GitHub Streak Stats"
+                                            alt={`${user.githubStats.username} GitHub contribution streak in dark theme`}
                                             src={`https://github-readme-streak-stats-salesp07.vercel.app/?user=${user.githubStats.username}&count_private=true&border_radius=20&ring=00bfbf&stroke=c9d1d9&background=0d1117&fire=00bfbf&currStreakNum=00bfbf&sideNums=00bfbf&datesside=00bfbf&Labelscurr=00bfbf&currStreakLabel=00bfbf&sideLabels=00bfbf&dates=c9d1d9&border=c9d1d9&hide_border=true`}
                                             width={467}
                                             height={195}
                                             className="w-full h-auto hidden dark:block"
                                         />
                                         <Image
-                                            alt="GitHub Streak Stats"
+                                            alt={`${user.githubStats.username} GitHub contribution streak in light theme`}
                                             src={`https://github-readme-streak-stats-salesp07.vercel.app/?user=${user.githubStats.username}&count_private=true&border_radius=20&ring=000000&stroke=000000&background=ffffff&fire=ff0000&currStreakNum=000000&sideNums=000000&datesside=000000&Labelscurr=000000&currStreakLabel=000000&sideLabels=000000&dates=000000&border=000000&hide_border=true`}
                                             width={467}
                                             height={195}

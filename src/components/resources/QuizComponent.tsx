@@ -25,7 +25,7 @@ export interface QuizComponentProps {
  */
 export default function QuizComponent({ quizId, questions, onComplete, title = "Quiz Time" }: QuizComponentProps) {
   const { addXp } = useGamification();
-  const { user, updateUserProfile } = useAuth();
+  const { user, updateUserProfile, awardPoints } = useAuth();
 
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState("");
@@ -80,20 +80,20 @@ export default function QuizComponent({ quizId, questions, onComplete, title = "
             if (!completed.includes(quizId) && passed) {
               const newQuizzes = [...completed, quizId];
               const pointsEarned = isPerfect ? 350 : 200;
-              const newPoints = (user.points || 0) + pointsEarned;
-              
-              // Update Firestore
-              await updateUserProfile({
-                completedQuizzes: newQuizzes,
-                points: newPoints
-              });
+               
+              // Update quiz progress (non-point fields)
+              await updateUserProfile({ completedQuizzes: newQuizzes });
 
-              // Show Toasts
-              if (isPerfect) {
-                addXp(350, "Perfect Quiz Score!");
-              } else {
-                addXp(200, "Passed Quiz Successfully!");
-              }
+              // Award XP atomically (also keeps leaderboard in sync)
+              await awardPoints(pointsEarned);
+
+              // Firestore already received the points update above; this call only shows feedback.
+              addXp(
+                pointsEarned,
+                isPerfect ? "Perfect Quiz Score!" : "Passed Quiz Successfully!",
+                "xp",
+                { persist: false }
+              );
             }
           } else if (!user) {
             // For unauthenticated testing
@@ -116,7 +116,7 @@ export default function QuizComponent({ quizId, questions, onComplete, title = "
 
     const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
 
-    const interval: any = setInterval(function() {
+    const interval: ReturnType<typeof setInterval> = setInterval(function() {
       const timeLeft = animationEnd - Date.now();
 
       if (timeLeft <= 0) {
