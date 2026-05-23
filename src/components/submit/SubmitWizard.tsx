@@ -52,7 +52,7 @@ export default function SubmitWizard() {
 
         if (step === 2) {
             if (!formData.demoUrl.trim()) newErrors.demoUrl = 'Demo URL is required';
-            if (formData.demoUrl && !formData.demoUrl.startsWith('http')) {
+            if (formData.demoUrl && !formData.demoUrl.startsWith('https')) {
                 newErrors.demoUrl = 'Please enter a valid URL';
             }
         }
