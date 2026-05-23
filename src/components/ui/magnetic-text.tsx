@@ -35,9 +35,9 @@ export function MagneticText({ text = "CREATIVE", hoverText = "EXPLORE", classNa
 
             // Update clip-path
             if (overlayRef.current) {
-                // Cache overlay rect for performance (update only when needed)
-                const overlayRect = overlayRectRef.current || overlayRef.current.getBoundingClientRect()
-                overlayRectRef.current = overlayRect
+                // Recalculate overlay rect each frame so scroll, layout shifts,
+                // font loading, and transforms do not desync the clip-path.
+                const overlayRect = overlayRef.current.getBoundingClientRect()
 
                 // Calculate mouse position relative to overlay's coordinate space
                 // This automatically handles transforms, scales, and parent positioning
