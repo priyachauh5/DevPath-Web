@@ -88,11 +88,19 @@ function fmtPoints(n: number) {
   return String(n);
 }
 function fmtDate(raw: any): string {
-  if (!raw) return 'Explorer';
+  if (raw === null || raw === undefined) return 'Recent Member';
   try {
-    const d = typeof raw === 'string' ? new Date(raw) : raw.toDate?.() ?? new Date(raw);
+    let d: Date;
+    if (typeof raw === 'string' || typeof raw === 'number') {
+      d = new Date(raw);
+    } else if (typeof raw.toDate === 'function') {
+      d = raw.toDate();
+    } else {
+      d = new Date(raw);
+    }
+    if (isNaN(d.getTime())) return 'Recent Member';
     return d.toLocaleDateString('en-IN', { month: 'short', year: 'numeric' });
-  } catch { return 'Member'; }
+  } catch { return 'Recent Member'; }
 }
 
 export default function DevCard({ user }: { user: any }) {
@@ -145,8 +153,8 @@ export default function DevCard({ user }: { user: any }) {
   const animStreak = useAnimatedCount(user?.streak ?? 0, 900);
 
   const profileUrl = typeof window !== 'undefined'
-    ? `${window.location.origin}/u?uid=${user?.uid}`
-    : `devpath.in/u?uid=${user?.uid}`;
+    ? `${window.location.origin}/u/${user?.uid}`
+    : `devpath.in/u/${user?.uid}`;
 
   const waitForCardImages = async (root: HTMLElement) => {
     const imgs = Array.from(root.querySelectorAll('img'));

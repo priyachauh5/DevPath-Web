@@ -35,7 +35,7 @@ import { getSafeSocialUrl, sanitizeSocialLinks } from '@/lib/safe-social-url';
  * - Rendering animated progress rings and privacy toggle modals.
  */
 export default function UserProfile() {
-    const { user, logout, updateUserProfile } = useAuth();
+    const { user, logout, updateUserProfile, awardPoints } = useAuth();
     const router = useRouter();
 
     useEffect(() => {
@@ -175,9 +175,9 @@ useEffect(() => {
         if (earnedRisingStar && !hasRisingStarBadge) {
             try {
                 await updateUserProfile({
-                    achievements: [...(user.achievements || []), RISING_STAR_BADGE_ID],
-                    points: (user.points || 0) + 10
+                    achievements: [...(user.achievements || []), RISING_STAR_BADGE_ID]
                 });
+                await awardPoints(10);
                 alert("🎉 Congratulations! You earned the 'Rising Star' badge and 10 XP!");
             } catch (error) {
                 console.error("Error awarding badge:", error);
@@ -197,7 +197,7 @@ useEffect(() => {
 
     const handleShareProfile = () => {
         if (!user) return;
-        const url = `${window.location.origin}/u?uid=${user.uid}`;
+        const url = `${window.location.origin}/u/${user.uid}`;
         navigator.clipboard.writeText(url);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
@@ -428,7 +428,7 @@ useEffect(() => {
                                     try {
                                         const d = new Date(user.createdAt.seconds ? user.createdAt.seconds * 1000 : user.createdAt);
                                         if (isNaN(d.getTime())) return 'Dec 2023';
-                                        return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+                                        return d.toLocaleDateString(undefined, { month: 'short', year: 'numeric' });
                                     } catch (e) {
                                         return 'Dec 2023';
                                     }
@@ -805,14 +805,20 @@ useEffect(() => {
                                     </div>
                                 </div>
                                 {aboutTab === 'write' ? (
-                                    <textarea
-                                        value={aboutContent}
-                                        onChange={(e) => setAboutContent(e.target.value)}
-                                        className="w-full min-h-[300px] p-4 bg-background border border-border rounded-lg font-mono text-sm"
-                                        placeholder="Markdown supported..."
-                                        name="aboutContent"
-                                        id="aboutContent"
-                                    />
+                                    <div>
+                                        <textarea
+                                            value={aboutContent}
+                                            onChange={(e) => setAboutContent(e.target.value)}
+                                            maxLength={500}
+                                            className="w-full min-h-[300px] p-4 bg-background border border-border rounded-lg font-mono text-sm"
+                                            placeholder="Markdown supported..."
+                                            name="aboutContent"
+                                            id="aboutContent"
+                                        />
+                                        <p className={`text-xs text-right mt-1 ${aboutContent.length >= 480 ? 'text-red-500' : 'text-muted-foreground'}`}>
+                                            {500 - aboutContent.length} / 500 characters remaining
+                                        </p>
+                                    </div>
                                 ) : (
                                     <div className="min-h-[300px] p-4 bg-background border border-border rounded-lg">
                                         <div className="markdown-body">
@@ -1024,7 +1030,7 @@ useEffect(() => {
                                             <h4 className="font-bold truncate">{u.name}</h4>
                                             <p className="text-xs text-muted-foreground truncate">@{u.email?.split('@')[0]}</p>
                                         </div>
-                                        <a href={`/u?uid=${u.uid}`} className="text-xs bg-primary/10 text-primary px-3 py-1 rounded-full hover:bg-primary/20">
+                                        <a href={`/u/${u.uid}`} className="text-xs bg-primary/10 text-primary px-3 py-1 rounded-full hover:bg-primary/20">
                                             View
                                         </a>
                                     </div>
