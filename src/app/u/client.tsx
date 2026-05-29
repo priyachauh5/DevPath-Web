@@ -12,10 +12,12 @@ import Rewards from '@/components/profile/Rewards';
 import FollowButton from '@/components/profile/FollowButton';
 import LoginHeatmap from '@/components/profile/LoginHeatmap';
 import DOMPurify from 'dompurify';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { GIT_FALLBACK_STATS } from '@/lib/github';
 import { getSafeSocialUrl } from '@/lib/safe-social-url';
+import { copyToClipboard } from '@/lib/clipboard';
+import { useNotification } from '@/context/NotificationContext';
 
 interface PublicUser {
     id?: string;
@@ -81,10 +83,9 @@ interface Project {
     createdAt: any;
 }
 
-function ProfileContent() {
-    const searchParams = useSearchParams();
+function ProfileContent({ uid }: { uid: string }) {
     const { user: currentUser } = useAuth();
-    const [uid, setUid] = useState<string | null>(null);
+    const { showSuccess, showError } = useNotification();
     const [user, setUser] = useState<PublicUser | null>(null);
     const [projects, setProjects] = useState<Project[]>([]);
     const [loading, setLoading] = useState(true);
@@ -100,15 +101,17 @@ function ProfileContent() {
     };
 
     useEffect(() => {
-        const paramUid = searchParams.get('uid');
-        if (paramUid) {
-            setUid(paramUid);
-        }
-    }, [searchParams]);
-
-    useEffect(() => {
         const fetchUserAndProjects = async () => {
-            if (!uid) return;
+            if (!uid) {
+                setError('No user specified.');
+                setLoading(false);
+                return;
+            }
+            if (uid.length < 3 || uid.length > 128 || /[<>"']/.test(uid)) {
+                setError('Invalid user identifier.');
+                setLoading(false);
+                return;
+            }
             setLoading(true);
             setError('');
 
@@ -290,14 +293,25 @@ function ProfileContent() {
         fetchUserAndProjects();
     }, [uid]);
 
+    useEffect(() => {
+        if (!uid) return;
+        const link = document.createElement('link');
+        link.rel = 'canonical';
+        link.href = `${window.location.origin}/u/${uid}`;
+        document.head.appendChild(link);
+        return () => { link.remove(); };
+    }, [uid]);
+
     const handleShareProfile = async () => {
-        const profileUrl = window.location.href;
-        try {
-            await navigator.clipboard.writeText(profileUrl);
+        const profileUrl = `${window.location.origin}/u/${uid}`;
+        const copiedSuccessfully = await copyToClipboard(profileUrl);
+
+        if (copiedSuccessfully) {
             setCopied(true);
             setTimeout(() => setCopied(false), 3000);
-        } catch (err) {
-            console.error('Failed to copy:', err);
+            showSuccess('Profile link copied to clipboard.');
+        } else {
+            showError('Copying the profile link is not supported in this browser.');
         }
     };
 
@@ -334,8 +348,13 @@ function ProfileContent() {
 
     const handleShareProject = (projectId: string) => {
         const url = window.location.href;
-        navigator.clipboard.writeText(url);
-        alert("Profile link copied!");
+        copyToClipboard(url).then((copiedSuccessfully) => {
+            if (copiedSuccessfully) {
+                showSuccess('Project link copied to clipboard.');
+            } else {
+                showError('Copying the project link is not supported in this browser.');
+            }
+        });
     };
 
     // Helper to safely format date
@@ -446,7 +465,7 @@ function ProfileContent() {
 
                             <div className="flex flex-wrap gap-3 mt-4">
                                 {user.id && <FollowButton targetUserId={user.id} targetRole={user.role} targetEmail={user.email} />}
-                                <button
+                                <button aria-label="Action button" 
                                     onClick={handleShareProfile}
                                     className="flex items-center gap-2 px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/80 transition-all duration-200 font-medium text-sm"
                                 >
@@ -735,7 +754,7 @@ function ProfileContent() {
 
                                         <div className="text-sm text-muted-foreground mb-3">
                                             <p className="line-clamp-2">{stripHtml(project.description)}</p>
-                                            <button
+                                            <button aria-label="Action button" 
                                                 onClick={() => setSelectedProject(project)}
                                                 className="text-primary text-xs font-medium hover:underline mt-1"
                                             >
@@ -760,14 +779,14 @@ function ProfileContent() {
 
                                         <div className="flex items-center justify-between pt-3 border-t border-border">
                                             <div className="flex items-center gap-4">
-                                                <button
+                                                <button aria-label="Action button" 
                                                     onClick={() => handleLikeProject(project.id, project.likes)}
                                                     className={`flex items-center gap-1.5 text-sm transition-colors ${currentUser && project.likes.includes(currentUser.uid) ? 'text-red-500' : 'text-muted-foreground hover:text-red-500'}`}
                                                 >
                                                     <Heart size={16} fill={currentUser && project.likes.includes(currentUser.uid) ? "currentColor" : "none"} />
                                                     <span>{project.likes.length}</span>
                                                 </button>
-                                                <button
+                                                <button aria-label="Action button" 
                                                     onClick={() => handleShareProject(project.id)}
                                                     className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors"
                                                 >
@@ -830,7 +849,7 @@ function ProfileContent() {
                         >
                             <div className="sticky top-0 z-10 flex items-center justify-between p-4 border-b border-border bg-card/95 backdrop-blur">
                                 <h2 className="text-xl font-bold truncate pr-4">{selectedProject.title}</h2>
-                                <button
+                                <button aria-label="Action button" 
                                     onClick={() => setSelectedProject(null)}
                                     className="p-2 hover:bg-muted rounded-full transition-colors"
                                 >
@@ -893,10 +912,49 @@ function ProfileContent() {
     );
 }
 
-export default function ProfileClient() {
+function isValidUid(value: string): boolean {
+    const trimmed = value.trim();
+    if (!trimmed || trimmed.length < 3 || trimmed.length > 128) return false;
+    if (/[<>"']/.test(trimmed)) return false;
+    return true;
+}
+
+function SearchParamsFallback() {
+    const searchParams = useSearchParams();
+    const pathname = usePathname();
+    const rawUid = searchParams.get('uid') || (pathname.startsWith('/u/') ? pathname.slice(3).split('/')[0].split('?')[0] : null);
+    const uid = rawUid?.trim() || null;
+
+    if (!uid) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4 text-center">
+                <UserIcon size={64} className="text-muted-foreground mb-4" />
+                <h1 className="text-2xl font-bold mb-2">No User Specified</h1>
+                <p className="text-muted-foreground">Please provide a user ID to view a profile.</p>
+            </div>
+        );
+    }
+
+    if (!isValidUid(uid)) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4 text-center">
+                <UserIcon size={64} className="text-muted-foreground mb-4" />
+                <h1 className="text-2xl font-bold mb-2">Invalid Profile</h1>
+                <p className="text-muted-foreground">The requested profile identifier is invalid.</p>
+            </div>
+        );
+    }
+
+    return <ProfileContent uid={uid} />;
+}
+
+export default function ProfileClient({ uid }: { uid?: string }) {
+    if (uid) {
+        return <ProfileContent uid={uid} />;
+    }
     return (
         <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-background"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div></div>}>
-            <ProfileContent />
+            <SearchParamsFallback />
         </Suspense>
     );
 }

@@ -10,8 +10,10 @@ import {
   ChevronRight, Sparkles, Medal,
 } from 'lucide-react';
 import { calculateLevel } from '@/lib/points';
+import { copyToClipboard } from '@/lib/clipboard';
 import { collection, query, where, getCountFromServer } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { useNotification } from '@/context/NotificationContext';
 import styles from './DevCard.module.css';
 
 // ── Badge registry ────────────────────────────────────────────────────────────
@@ -88,20 +90,31 @@ function fmtPoints(n: number) {
   return String(n);
 }
 function fmtDate(raw: any): string {
-  if (!raw) return 'Explorer';
+  if (raw === null || raw === undefined) return 'Recent Member';
   try {
-    const d = typeof raw === 'string' ? new Date(raw) : raw.toDate?.() ?? new Date(raw);
+    let d: Date;
+    if (typeof raw === 'string' || typeof raw === 'number') {
+      d = new Date(raw);
+    } else if (typeof raw.toDate === 'function') {
+      d = raw.toDate();
+    } else {
+      d = new Date(raw);
+    }
+    if (isNaN(d.getTime())) return 'Recent Member';
     return d.toLocaleDateString('en-IN', { month: 'short', year: 'numeric' });
-  } catch { return 'Member'; }
+  } catch { return 'Recent Member'; }
 }
 
 export default function DevCard({ user }: { user: any }) {
+  const IMAGE_WAIT_TIMEOUT_MS = 5000;
   const cardRef = useRef<HTMLDivElement>(null);
   const [rank, setRank]             = useState<number | null>(null);
   const [rankLoading, setRankLoading] = useState(true);
   const [copied, setCopied]         = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [langMounted, setLangMounted] = useState(false);
+  const [avatarLoadFailed, setAvatarLoadFailed] = useState(false);
+  const { showSuccess, showError } = useNotification();
 
   useEffect(() => {
     const fetch = async () => {
@@ -121,6 +134,10 @@ export default function DevCard({ user }: { user: any }) {
     return () => clearTimeout(t);
   }, []);
 
+  useEffect(() => {
+    setAvatarLoadFailed(false);
+  }, [user?.photoURL]);
+
   const levelInfo   = calculateLevel(user?.points ?? 0);
   const level       = levelInfo.currentLevel;
   const levelColor  = resolveLevelColor(level.color);
@@ -139,16 +156,63 @@ export default function DevCard({ user }: { user: any }) {
   const animStreak = useAnimatedCount(user?.streak ?? 0, 900);
 
   const profileUrl = typeof window !== 'undefined'
-    ? `${window.location.origin}/u?uid=${user?.uid}`
-    : `devpath.in/u?uid=${user?.uid}`;
+    ? `${window.location.origin}/u/${user?.uid}`
+    : `devpath.in/u/${user?.uid}`;
+
+  const waitForCardImages = async (root: HTMLElement) => {
+    const imgs = Array.from(root.querySelectorAll('img'));
+    await Promise.all(
+      imgs.map(async (img) => {
+        if (img.complete) {
+          // complete + naturalWidth 0 means a failed image; treat as terminal.
+          if (img.naturalWidth === 0) return;
+          return;
+        }
+        if (typeof img.decode === 'function') {
+          try {
+            await Promise.race([
+              img.decode(),
+              new Promise<void>((resolve) => {
+                setTimeout(resolve, IMAGE_WAIT_TIMEOUT_MS);
+              }),
+            ]);
+            return;
+          } catch {
+            // Fallback to load/error listeners if decode rejects.
+          }
+        }
+
+        await new Promise<void>((resolve) => {
+          const timeoutId = setTimeout(() => {
+            done();
+          }, IMAGE_WAIT_TIMEOUT_MS);
+
+          const done = () => {
+            img.removeEventListener('load', done);
+            img.removeEventListener('error', done);
+            clearTimeout(timeoutId);
+            resolve();
+          };
+
+          img.addEventListener('load', done, { once: true });
+          img.addEventListener('error', done, { once: true });
+        });
+      })
+    );
+  };
 
   const handleDownload = async () => {
     if (!cardRef.current || downloading) return;
     setDownloading(true);
     try {
+      await waitForCardImages(cardRef.current);
       const { default: html2canvas } = await import('html2canvas');
       const canvas = await html2canvas(cardRef.current, {
-        scale: 2, useCORS: true, backgroundColor: null, logging: false,
+        scale: 2,
+        useCORS: true,
+        allowTaint: false,
+        backgroundColor: null,
+        logging: false,
       });
       const a = document.createElement('a');
       a.download = `devcard-${(user?.name ?? 'dev').replace(/\s+/g, '-')}.png`;
@@ -162,11 +226,15 @@ export default function DevCard({ user }: { user: any }) {
   };
 
   const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(profileUrl);
+    const copiedSuccessfully = await copyToClipboard(profileUrl);
+
+    if (copiedSuccessfully) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
-    } catch { /* silent */ }
+      showSuccess('Profile link copied to clipboard.');
+    } else {
+      showError('Copying the profile link is not supported in this browser.');
+    }
   };
 
   // ── Motion variants ───────────────────────────────────────────────────────
@@ -190,8 +258,18 @@ export default function DevCard({ user }: { user: any }) {
           <motion.div className={styles.leftPanel} variants={container} initial="hidden" animate="show">
             <motion.div className={styles.avatarRing} variants={item}>
               <div className={styles.avatarRingInner} />
-              {user?.photoURL ? (
-                <Image src={user.photoURL} alt={user?.name ?? 'Developer'} fill className={styles.avatar} unoptimized />
+              {user?.photoURL && !avatarLoadFailed ? (
+                <Image
+                  src={user.photoURL}
+                  alt={user?.name ?? 'Developer'}
+                  fill
+                  className={styles.avatar}
+                  unoptimized
+                  crossOrigin="anonymous"
+                  referrerPolicy="no-referrer"
+                  priority
+                  onError={() => setAvatarLoadFailed(true)}
+                />
               ) : (
                 <div className={styles.avatarFallback}>{user?.name?.charAt(0)?.toUpperCase() ?? '?'}</div>
               )}
