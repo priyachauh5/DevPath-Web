@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Clock, BookOpen, ArrowRight, Bell } from 'lucide-react';
 import Button from '../ui/Button';
 import ComingSoonBadge from '../features/ComingSoonBadge';
@@ -65,6 +65,27 @@ export default function LearningPaths() {
     const [selectedPath, setSelectedPath] = useState<string>("");
     const [email, setEmail] = useState("");
     const [isSubmitted, setIsSubmitted] = useState(false);
+    
+    // Infinite Scroll State Configuration Layer
+    const [visibleCount, setVisibleCount] = useState(2); 
+    const observerAnchorRef = useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+        const targetAnchor = observerAnchorRef.current;
+        if (!targetAnchor) return;
+
+        const scrollObserver = new IntersectionObserver((intersectEntries) => {
+            if (intersectEntries[0].isIntersecting && visibleCount < paths.length) {
+                // Smoothly increment visible cards batching list
+                setVisibleCount((prevValue) => Math.min(prevValue + 2, paths.length));
+            }
+        }, { threshold: 0.1 });
+
+        scrollObserver.observe(targetAnchor);
+        return () => {
+            if (targetAnchor) scrollObserver.unobserve(targetAnchor);
+        };
+    }, [visibleCount]);
 
     const handlePathClick = (path: Path) => {
         if (path.status === 'coming-soon') {
@@ -77,7 +98,6 @@ export default function LearningPaths() {
 
     const handleNotifySubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        // Simulate API call
         setTimeout(() => {
             setIsSubmitted(true);
         }, 1000);
@@ -93,7 +113,7 @@ export default function LearningPaths() {
             </div>
 
             <div className={styles.carousel}>
-                {paths.map((path, index) => (
+                {paths.slice(0, visibleCount).map((path, index) => (
                     <div
                         key={index}
                         className={`${styles.pathCard} ${path.status === 'coming-soon' ? styles.comingSoon : ''}`}
@@ -147,6 +167,15 @@ export default function LearningPaths() {
                 ))}
             </div>
 
+            {/* Core Infinite Scroll Interceptor Trigger Target Element */}
+            <div ref={observerAnchorRef} style={{ width: '100%', height: '20px', margin: '15px 0', textAlign: 'center' }}>
+                {visibleCount < paths.length ? (
+                    <span style={{ fontSize: '14px', color: '#6B7280', animation: 'pulse 2s infinite' }}>🔄 Loading more tracks...</span>
+                ) : (
+                    <span style={{ fontSize: '14px', color: '#10B981', fontWeight: 'bold' }}>🎉 You have reached the end of the roadmaps!</span>
+                )}
+            </div>
+
             {showNotifyModal && (
                 <div className={styles.modalOverlay} onClick={() => setShowNotifyModal(false)}>
                     <div className={styles.modal} onClick={e => e.stopPropagation()}>
@@ -185,3 +214,4 @@ export default function LearningPaths() {
         </section>
     );
 }
+
