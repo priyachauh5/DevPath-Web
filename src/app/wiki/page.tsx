@@ -83,11 +83,12 @@ function WikiPageContent() {
         []
     );
 
-    const fuseResults = useMemo(() => {
-        if (!searchQuery.trim()) return [];
-        const fuse = new Fuse(allItems, { keys: ['title'], threshold: 0.4, includeMatches: true });
-        return fuse.search(searchQuery);
-    }, [allItems, searchQuery]);
+    const fuse = useMemo(
+        () => new Fuse(allItems, { keys: ['title'], threshold: 0.4, includeMatches: true }),
+        [allItems]
+    );
+
+    const fuseResults = useMemo(() => fuse.search(searchQuery), [fuse, searchQuery]);
 
     const matchMap = useMemo(
         () =>
@@ -101,12 +102,19 @@ function WikiPageContent() {
     );
 
     const filteredCategories = useMemo(() => {
-        if (!searchQuery.trim()) return categories;
-        const matched = new Set(fuseResults.map((result) => result.item.id));
+        if (!searchQuery.trim()) {
+            return categories;
+        }
+
+        const matchedIds = new Set(fuseResults.map((result) => result.item.id));
+
         return categories
-            .map((category) => ({ ...category, items: category.items.filter((item) => matched.has(item.id)) }))
+            .map((category) => ({
+                ...category,
+                items: category.items.filter((item) => matchedIds.has(item.id)),
+            }))
             .filter((category) => category.items.length > 0);
-    }, [fuseResults, searchQuery]);
+    }, [searchQuery, fuseResults]);
 
     const searchResults = useMemo(() => searchArticles(wikiSearchIndex, searchQuery), [searchQuery]);
     const isSearching = searchQuery.trim().length > 0;
@@ -194,9 +202,10 @@ function WikiPageContent() {
                     />
                     {isSearching && (
                         <button
+                            type="button"
+                            aria-label="Clear search"
                             className={styles.clearSearch}
                             onClick={() => setSearchQuery('')}
-                            aria-label="Clear search"
                         >
                             <X size={14} />
                         </button>
