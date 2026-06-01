@@ -46,7 +46,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "APP_URL",
+    url: APP_URL,
     title: "DevPath Community",
     description: "Join 50,000+ developers accelerating their coding skills through structured paths, real projects, and an active community.",
     siteName: "DevPath Community",
@@ -76,7 +76,7 @@ const jsonLd = {
   "@context": "https://schema.org",
   "@type": "Organization",
   "name": "DevPath Community",
-  "url": "APP_URL",
+  "url": APP_URL,
   "logo": `${APP_URL}/DevPath-logo.webp`,
   "sameAs": [
     "https://twitter.com/DevPath_Community",
