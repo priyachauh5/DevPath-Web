@@ -24,7 +24,7 @@ export function ThemeToggle() {
     // shift and prevent theme-dependent icons from flickering.
     if (!mounted) {
         return (
-            <Button
+            <Button aria-label="Action button" 
                 variant="ghost"
                 disabled
                 aria-hidden="true"

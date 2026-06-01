@@ -425,7 +425,7 @@ useEffect(() => {
                             {user.privacySettings?.showEmail && (
                                 <div className="flex items-center gap-2 text-muted-foreground">
                                     <LinkIcon size={16} />
-                                    <a href={`mailto:${user.email}`} className="hover:text-primary truncate">{user.email}</a>
+                                    <a aria-label="Link"  href={`mailto:${user.email}`} className="hover:text-primary truncate">{user.email}</a>
                                 </div>
                             )}
                             <div className="flex items-center gap-2 text-muted-foreground">
@@ -444,9 +444,9 @@ useEffect(() => {
                         </div>
 
                         <div className="flex gap-3 mt-6">
-                            {safeSocialLinks.github && <a href={safeSocialLinks.github} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground"><Github size={20} /></a>}
-                            {safeSocialLinks.linkedin && <a href={safeSocialLinks.linkedin} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground"><Linkedin size={20} /></a>}
-                            {safeSocialLinks.instagram && <a href={safeSocialLinks.instagram} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground"><Instagram size={20} /></a>}
+                            {safeSocialLinks.github && <a aria-label="Link"  href={safeSocialLinks.github} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground"><Github size={20} /></a>}
+                            {safeSocialLinks.linkedin && <a aria-label="Link"  href={safeSocialLinks.linkedin} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground"><Linkedin size={20} /></a>}
+                            {safeSocialLinks.instagram && <a aria-label="Link"  href={safeSocialLinks.instagram} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground"><Instagram size={20} /></a>}
                         </div>
                     </div>
 
@@ -734,7 +734,7 @@ useEffect(() => {
                                                             {event.type.replace('Event', '').replace(/([A-Z])/g, ' $1').trim()}
                                                         </span>
                                                         {' '}on{' '}
-                                                        <a href={event.repo.url} target="_blank" className="text-primary hover:underline font-medium">
+                                                        <a aria-label="Link"  href={event.repo.url} target="_blank" className="text-primary hover:underline font-medium">
                                                             {event.repo.name}
                                                         </a>
                                                     </p>
@@ -992,7 +992,7 @@ useEffect(() => {
                                             <h4 className="font-bold truncate">{u.name}</h4>
                                             <p className="text-xs text-muted-foreground truncate">@{u.email?.split('@')[0]}</p>
                                         </div>
-                                        <a href={`/u?uid=${u.uid}`} className="text-xs bg-primary/10 text-primary px-3 py-1 rounded-full hover:bg-primary/20">
+                                        <a aria-label="Link"  href={`/u?uid=${u.uid}`} className="text-xs bg-primary/10 text-primary px-3 py-1 rounded-full hover:bg-primary/20">
                                             View
                                         </a>
                                     </div>
@@ -1037,7 +1037,7 @@ useEffect(() => {
                                             <h4 className="font-bold truncate">{u.name}</h4>
                                             <p className="text-xs text-muted-foreground truncate">@{u.email?.split('@')[0]}</p>
                                         </div>
-                                        <a href={`/u/${u.uid}`} className="text-xs bg-primary/10 text-primary px-3 py-1 rounded-full hover:bg-primary/20">
+                                        <a aria-label="Link"  href={`/u/${u.uid}`} className="text-xs bg-primary/10 text-primary px-3 py-1 rounded-full hover:bg-primary/20">
                                             View
                                         </a>
                                     </div>
@@ -1097,7 +1097,7 @@ useEffect(() => {
                             {/* Links & Skills */}
                             <div className="flex flex-wrap gap-4 pt-4 border-t border-border">
                                 {selectedProject.websiteUrl && (
-                                    <a
+                                    <a aria-label="Link" 
                                         href={selectedProject.websiteUrl}
                                         target="_blank"
                                         rel="noopener noreferrer"

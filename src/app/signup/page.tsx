@@ -366,7 +366,7 @@ export default function SignupPage() {
                     </p>
 
                     <div className="space-y-4">
-                        <a
+                        <a aria-label="Link" 
                             href="https://www.linkedin.com/company/devpath-community/"
                             target="_blank"
                             rel="noopener noreferrer"
@@ -381,7 +381,7 @@ export default function SignupPage() {
                             </div>
                         </a>
 
-                        <a
+                        <a aria-label="Link" 
                             href="https://www.instagram.com/devpath_community/"
                             target="_blank"
                             rel="noopener noreferrer"
@@ -396,7 +396,7 @@ export default function SignupPage() {
                             </div>
                         </a>
 
-                        <a
+                        <a aria-label="Link" 
                             href="https://github.com/devpathindcommunity-india"
                             target="_blank"
                             rel="noopener noreferrer"
