@@ -16,7 +16,8 @@ interface Notification {
     createdAt: any
     read: boolean
     type: 'achievement' | 'message' | 'event' | 'system' | 'event_reminder' | 'announcement' | 'wiki_update'
-link?: string
+    link?: string
+}
 
 export default function NotificationsPage() {
     const { user } = useAuth()

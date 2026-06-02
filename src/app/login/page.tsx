@@ -28,7 +28,7 @@ import AdminKeyModal from "@/components/auth/AdminKeyModal";
 import { useAuth } from "@/context/AuthContext";
 import { useNotification } from "@/context/NotificationContext";
 import { useMaintenance } from "@/hooks/useMaintenance";
-import { db } from "@/lib/firebase";
+import { db, auth } from "@/lib/firebase";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
